@@ -14,25 +14,34 @@ export default function Dashboard() {
   const [isIndeterminate, setIsIndeterminate] = useState<boolean>(false);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
 
-  useEffect(() => {
+ useEffect(() => {
     setIsAnalyzing(true);
     const timer = setTimeout(() => {
-      const denominator = Math.pow(y0, 2) - Math.pow(x0, 2);
-
-      if (denominator === 0) {
-        setIsIndeterminate(true);
-        setCValue("∞");
-        setChartData([]);
-      } else {
+      // Si x e y son iguales, es la solución singular (y = x)
+      if (x0 === y0) {
+        setCValue("∞ (Solución Singular y=x)");
         setIsIndeterminate(false);
-        const calculatedC = Math.pow(x0, 3) / denominator;
+      } else {
+        const denominator = Math.pow(y0, 2) - Math.pow(x0, 2);
 
-        if (Math.abs(calculatedC - 1/3) < 0.001) {
-          setCValue("1/3");
+        if (denominator === 0) {
+          setIsIndeterminate(true);
+          setCValue("∞");
+          setChartData([]);
         } else {
-          setCValue(calculatedC.toFixed(4));
-        }
+          setIsIndeterminate(false);
+          const calculatedC = Math.pow(x0, 3) / denominator;
 
+          if (Math.abs(calculatedC - 1/3) < 0.001) {
+            setCValue("1/3");
+          } else {
+            setCValue(calculatedC.toFixed(4));
+          }
+        }
+      }
+
+      // Dejamos que RK4 corra libremente SIEMPRE (incluso con 1 y 1)
+      if (!isIndeterminate || x0 === y0) {
         const result = runSimulation(equation, x0, y0);
         if (result.success && result.data) {
           setChartData(result.data);
